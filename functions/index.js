@@ -69,3 +69,26 @@ exports.createPost = functions.https.onRequest(async (req, res) => {
     return res.status(500).send({error: "Failed to create post"});
   }
 });
+
+exports.getPosts = functions.https.onRequest(async (req, res) => {
+  if (req.method !== "GET") {
+    return res.status(405).send({error: "Method not allowed!"});
+  }
+
+  try {
+    const postsRef = await db.collection("posts").get();
+    if (postsRef.empty) {
+      return res.status(200).send({posts: []});
+    }
+
+    const posts = [];
+    postsRef.forEach((doc) => {
+      posts.push({...doc.data()});
+    });
+
+    return res.status(200).send({posts: posts});
+  } catch (error) {
+    console.error("Error getting posts: ", error);
+    return res.status(500).send({error: "Failed to get posts"});
+  }
+});
