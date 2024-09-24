@@ -137,7 +137,8 @@ exports.updatePost = functions.https.onRequest(async (req, res) => {
     if (description) updates.description = description;
 
     await postRef.update(updates);
-    return res.status(200).send({message: "Post updated successfully"});
+    const updatedSnap = await postRef.get();
+    return res.status(200).send({...updatedSnap.data()});
   } catch (error) {
     console.error("Error getting posts: ", error);
     return res.status(500).send({error: "Failed to update post"});
