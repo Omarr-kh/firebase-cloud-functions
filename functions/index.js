@@ -144,3 +144,24 @@ exports.updatePost = functions.https.onRequest(async (req, res) => {
     return res.status(500).send({error: "Failed to update post"});
   }
 });
+
+exports.deletePost = functions.https.onRequest(async (req, res) => {
+  if (req.method !== "DELETE") {
+    return res.status(405).send({error: "Method not allowed!"});
+  }
+
+  try {
+    const postId = req.params[0].replace("/", "");
+    const postRef = db.collection("posts").doc(postId);
+    const postSnapshot = await postRef.get();
+
+    if (!postSnapshot.exists) {
+      return res.status(404).send({error: "Post not found"});
+    }
+    await postRef.delete();
+    return res.status(200).send({message: "post deleted!"});
+  } catch (error) {
+    console.error("Error deleting post: ", error);
+    return res.status(500).send({error: "Failed to delete post"});
+  }
+});
