@@ -59,8 +59,9 @@ exports.createPost = functions.https.onRequest(async (req, res) => {
 
   try {
     const newPostRef = await db.collection("posts").add({
-      title: title,
-      description: description,
+      "title": title,
+      "description": description,
+      "Creation Date": new Date().toISOString(),
     });
 
     return res.status(201).send({postId: newPostRef.id});
