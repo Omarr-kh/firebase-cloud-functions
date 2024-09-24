@@ -92,3 +92,22 @@ exports.getPosts = functions.https.onRequest(async (req, res) => {
     return res.status(500).send({error: "Failed to get posts"});
   }
 });
+
+exports.getPost = functions.https.onRequest(async (req, res) => {
+  if (req.method !== "GET") {
+    return res.status(405).send({error: "Method not allowed!"});
+  }
+
+  try {
+    const postId = req.params[0].replace("/", "");
+    const postRef = db.collection("posts").doc(postId);
+    const postSnapshot = await postRef.get();
+    if (!postSnapshot.exists) {
+      return res.status(404).send({error: "Post not found"});
+    }
+    return res.status(200).send({post: postSnapshot.data()});
+  } catch (error) {
+    console.error("Error getting posts: ", error);
+    return res.status(500).send({error: "Failed to get posts"});
+  }
+});
