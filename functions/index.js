@@ -107,7 +107,38 @@ exports.getPost = functions.https.onRequest(async (req, res) => {
     }
     return res.status(200).send({post: postSnapshot.data()});
   } catch (error) {
+    console.error("Error getting post: ", error);
+    return res.status(500).send({error: "Failed to get post"});
+  }
+});
+
+exports.updatePost = functions.https.onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).send({error: "Method not allowed!"});
+  }
+
+  const {title, description} = req.body;
+  if (!title && !description) {
+    return res.status(400).send({error: "provide title or description!"});
+  }
+
+  try {
+    const postId = req.params[0].replace("/", "");
+    const postRef = db.collection("posts").doc(postId);
+    const postSnapshot = await postRef.get();
+
+    if (!postSnapshot.exists) {
+      return res.status(404).send({error: "Post not found"});
+    }
+    // update post
+    const updates = {};
+    if (title) updates.title = title;
+    if (description) updates.description = description;
+
+    await postRef.update(updates);
+    return res.status(200).send({message: "Post updated successfully"});
+  } catch (error) {
     console.error("Error getting posts: ", error);
-    return res.status(500).send({error: "Failed to get posts"});
+    return res.status(500).send({error: "Failed to update post"});
   }
 });
